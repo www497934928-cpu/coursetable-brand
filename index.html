@@ -556,32 +556,55 @@ function todayDayIndex(){
  * 采用现代莫兰迪色系/UI色板，根据课程名称智能分配颜色
  */
 const palette = [
-  { bg:'#e0e7ff', border:'#6366f1', text:'#312e81' }, // 靛蓝
-  { bg:'#fce7f3', border:'#ec4899', text:'#831843' }, // 粉色
-  { bg:'#d1fae5', border:'#10b981', text:'#064e3b' }, // 翠绿
-  { bg:'#fef3c7', border:'#f59e0b', text:'#78350f' }, // 琥珀
-  { bg:'#dbeafe', border:'#3b82f6', text:'#1e3a8a' }, // 蓝色
-  { bg:'#ede9fe', border:'#8b5cf6', text:'#4c1d95' }, // 紫色
-  { bg:'#ffe4e6', border:'#f43f5e', text:'#881337' }, // 玫瑰
-  { bg:'#ccfbf1', border:'#14b8a6', text:'#134e4a' }, // 青色
+  { bg:'#e0e7ff', border:'#4f46e5', text:'#312e81' }, // 1 靛蓝
+  { bg:'#ffedd5', border:'#f97316', text:'#7c2d12' }, // 2 橙
+  { bg:'#d1fae5', border:'#059669', text:'#064e3b' }, // 3 翠绿
+  { bg:'#fce7f3', border:'#db2777', text:'#831843' }, // 4 玫红
+  { bg:'#e0f2fe', border:'#0284c7', text:'#0c4a6e' }, // 5 天蓝
+  { bg:'#ede9fe', border:'#7c3aed', text:'#4c1d95' }, // 6 紫罗兰
+  { bg:'#ccfbf1', border:'#0d9488', text:'#134e4a' }, // 7 青绿
+  { bg:'#fee2e2', border:'#dc2626', text:'#7f1d1d' }, // 8 红
+  { bg:'#fef3c7', border:'#d97706', text:'#78350f' }, // 9 琥珀
+  { bg:'#ecfccb', border:'#65a30d', text:'#365314' }, // 10 黄绿
+  { bg:'#cffafe', border:'#0891b2', text:'#164e63' }, // 11 青
+  { bg:'#f3e8ff', border:'#a21caf', text:'#581c87' }, // 12 品红
 ];
 const darkPalette = [
-  { bg:'#312e81', border:'#818cf8', text:'#e0e7ff' },
-  { bg:'#831843', border:'#f472b6', text:'#fce7f3' },
-  { bg:'#064e3b', border:'#34d399', text:'#d1fae5' },
-  { bg:'#78350f', border:'#fbbf24', text:'#fef3c7' },
-  { bg:'#1e3a8a', border:'#60a5fa', text:'#dbeafe' },
-  { bg:'#4c1d95', border:'#a78bfa', text:'#ede9fe' },
-  { bg:'#881337', border:'#fb7185', text:'#ffe4e6' },
-  { bg:'#134e4a', border:'#2dd4bf', text:'#ccfbf1' },
+  { bg:'#312e81', border:'#818cf8', text:'#e0e7ff' }, // 1 靛蓝
+  { bg:'#7c2d12', border:'#fb923c', text:'#ffedd5' }, // 2 橙
+  { bg:'#064e3b', border:'#34d399', text:'#d1fae5' }, // 3 翠绿
+  { bg:'#831843', border:'#f472b6', text:'#fce7f3' }, // 4 玫红
+  { bg:'#0c4a6e', border:'#38bdf8', text:'#e0f2fe' }, // 5 天蓝
+  { bg:'#4c1d95', border:'#a78bfa', text:'#ede9fe' }, // 6 紫罗兰
+  { bg:'#134e4a', border:'#2dd4bf', text:'#ccfbf1' }, // 7 青绿
+  { bg:'#7f1d1d', border:'#f87171', text:'#fee2e2' }, // 8 红
+  { bg:'#78350f', border:'#fbbf24', text:'#fef3c7' }, // 9 琥珀
+  { bg:'#365314', border:'#a3e635', text:'#ecfccb' }, // 10 黄绿
+  { bg:'#164e63', border:'#22d3ee', text:'#cffafe' }, // 11 青
+  { bg:'#581c87', border:'#c084fc', text:'#f3e8ff' }, // 12 品红
 ];
 
-function getCourseColorIndex(name) {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+/* 颜色分配缓存：课程名 → 色板下标 */
+let _colorCache = { sig:'', map:new Map() };
+
+function getCourseColorIndex(name){
+  const sig = state.courses.map(c => c.name).join('\u0001');
+  if(sig !== _colorCache.sig){
+    // 按课程名去重 + 排序，依次取色，保证每门课一个独立颜色
+    const names = [...new Set(state.courses.map(c => c.name))]
+      .sort((a, b) => a.localeCompare(b, 'zh-Hans-CN'));
+    const map = new Map();
+    names.forEach((n, i) => map.set(n, i % palette.length));
+    _colorCache = { sig, map };
   }
-  return Math.abs(hash) % palette.length;
+  if(_colorCache.map.has(name)) return _colorCache.map.get(name);
+
+  // 兜底：课程不在当前列表中时用哈希
+  let hash = 0;
+  for(let i = 0; i < name.length; i++){
+    hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+  }
+  return hash % palette.length;
 }
 
 function courseColors(name){
