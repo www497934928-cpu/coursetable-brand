@@ -1,5 +1,4 @@
-const CACHE_PREFIX = 'coursetable-brand2602-';
-const CACHE = CACHE_PREFIX + 'v1';
+const CACHE ='courseTablePro_v2_brand2602';
 const ASSETS = [
   './',
   './index.html',
